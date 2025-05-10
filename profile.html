@@ -371,6 +371,10 @@
             const profileContent = document.getElementById('profile-content');
             const profileNavLink = document.getElementById('profileNavLink');
             const profileMessage = document.getElementById('profile-message-content');
+            if (profileMessage) {
+                profileMessage.style.display = 'none'; // atau nilai lainnya
+            }
+
             const uploadModal = document.getElementById('uploadModal');
             const closeModalButton = document.getElementById('closeModal');
 
@@ -481,6 +485,74 @@
                     alert(`Gagal mengunggah foto: ${error.message}`);
                 }
             });
+<<<<<<< HEAD
+=======
+
+            // Preview foto sebelum upload
+            function previewPhoto(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    alert('File harus berupa gambar!');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('user-photo').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Upload foto ke Supabase
+            async function uploadPhoto() {
+                const fileInput = document.querySelector('input[type="file"]');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Pilih foto dulu!');
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    alert('File yang dipilih bukan gambar!');
+                    return;
+                }
+                
+                // Ambil userId dari localStorage atau gunakan default 'user123'
+                const userId = localStorage.getItem('studentProfileId') || 'user123';
+                const extension = file.name.split('.').pop();
+                const fileName = `photos/${userId}-${Date.now()}.${extension}`;
+                
+                try {
+                    const { error } = await supabase.storage
+                        .from('gallery')
+                        .upload(fileName, file, { upsert: true });
+                        
+                    if (error) {
+                        console.error('Gagal mengunggah foto:', error.message);
+                        alert('Gagal mengunggah: ' + error.message);
+                        return;
+                    }
+                    
+                    // Ambil URL publik foto yang diunggah
+                    const { data } = supabase.storage
+                        .from('gallery')
+                        .getPublicUrl(fileName);
+                        
+                    if (!data || !data.publicUrl) {
+                        alert('Gagal mendapatkan URL foto!');
+                        return;
+                    }
+                    
+                    document.getElementById('user-photo').src = data.publicUrl;
+                    alert('Foto berhasil diunggah!');
+                    
+                    // Reset input file
+                    fileInput.value = '';
+                } catch (err) {
+                    console.error('Error saat upload foto:', err.message);
+                    alert('Terjadi kesalahan: ' + err.message);
+                }
+            }
+>>>>>>> 42be34c (Selesaikan konflik setelah pull)
         });
     </script>
 </body>
