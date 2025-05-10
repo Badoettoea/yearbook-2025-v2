@@ -3,54 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Yearbook 2025</title>
-    <link rel="stylesheet" href="css/memories.css"> <!-- Sesuaikan kalau CSS beda -->
-</head>
-<body>
-    <h1>User Profile</h1>
-    <div class="profile-photo">
-        <img id="profilePhoto" src="https://via.placeholder.com/150" alt="Profile Photo">
-        <input type="file" accept="image/*"> <!-- Tanpa id -->
-        <button onclick="document.querySelector('input[type=file]').click()">Change Photo</button>
-        <button onclick="uploadPhoto()">Submit</button>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Inisialisasi Supabase
-        const supabase = Supabase.createClient(
-            'https://dswzjhefngrgzowcilll.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0'
-        );
-
-        async function uploadPhoto() {
-            const fileInput = document.querySelector('input[type=file]');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Pilih foto dulu, bro!');
-                return;
-            }
-
-            // Upload ke bucket student-photos
-            const userId = 'user123'; // Ganti dengan user ID dinamis (misalnya, dari auth)
-            const filePath = `${userId}/${file.name}`; // Simpan di subfolder user
-            const { data, error } = await supabase.storage
-                .from('student-photos')
-                .upload(filePath, file, { upsert: true });
-
-            if (error) {
-                console.error('Gagal mengunggah foto:', error.message);
-                alert('Gagal upload: ' + error.message);
-                return;
-            }
-
-            // Update foto di UI
-            const { data: urlData } = supabase.storage
-                .from('student-photos')
-                .getPublicUrl(filePath);
-            document.getElementById('profilePhoto').src = urlData.publicUrl;
-            alert('Foto berhasil diupload, bro!');
+    <title>Yearbook 2025 - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #008080;
         }
+        .header-custom {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #F2EFE7;
+            border-radius: 14px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        @media (min-width: 768px) {
+            .profile-container {
+                flex-direction: row;
+                gap: 2rem;
+            }
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-field {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+        .profile-field p {
+            margin-bottom: 0.25rem;
+        }
+        .photo-container {
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 14px;
+        }
+        .btn {
+            min-width: 48px;
+            min-height: 48px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.2s ease;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .modal-card {
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal.show .modal-card {
+            transform: translateY(0);
+        }
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #333;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .skeleton {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        #skeleton-loader > div {
+            animation: pulse 1.5s infinite;
+        }
+        @media (max-width: 767px) {
+            .profile-container {
+                flex-direction: column;
+            }
+            .photo-section {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            #photo-preview {
+                width: 100%;
+                height: auto;
+                max-width: 256px;
+                max-height: 256px;
+                object-fit: cover;
+            }
+            .profile-info {
+                width: 100%;
+            }
+            .header-custom .container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header-custom nav {
+                margin-top: 10px;
+                flex-direction: column;
+                align-items: center;
+            }
+            .header-custom nav a {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="header-custom bg-pink-500 text-white p-4">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl font-semibold">Yearbook 2025</h1>
+            <nav class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 mt-2 md:mt-0">
+                <a href="index.html" class="hover:underline">Home</a>
+                <a href="#" id="profileNavLink" class="hover:underline font-medium">Profile</a>
+                <a href="gallery.html" class="hover:underline">Gallery</a>
+                <a href="memories.html" class="hover:underline">Memories</a>
+                <a href="index.html" class="hover:underline font-medium" onclick="localStorage.removeItem('studentProfileId');">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <div id="loading" class="loading-spinner" style="display: block;"></div>
+        
+        <div id="profile-content" style="display: none;">
+            <section id="profile-info-message" class="my-4">
+                <p id="profile-message-content" class="text-white text-center"></p>
+            </section>
+            
+            <section class="my-8">
+                <h2 class="text-2xl font-semibold text-center mb-6 text-gray-800">Profil Anda</h2>
+                <div class="flex flex-col items-center">
+                    <!-- Foto pengguna -->
+                    <img id="user-photo" src="default-photo.jpg" alt="Foto Profil" class="w-32 h-32 rounded-full mb-4 object-cover">
+                    
+                    <!-- Input file untuk upload -->
+                    <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="previewPhoto(event)">
+                    <label for="photoUpload" class="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-600 transition">
+                        Pilih Foto
+                    </label>
+                    
+                    <!-- Tombol upload -->
+                    <button onclick="uploadPhoto()" class="bg-green-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition mt-4">
+                        Unggah Foto
+                    </button>
+                </div>
+            </section>
+
+            <div id="uploadModal" class="modal">
+                <div class="modal-card bg-white p-8 rounded-xl">
+                    <h2 class="text-xl font-semibold mb-4">Sukses!</h2>
+                    <p class="mb-4">Foto profil berhasil diperbarui.</p>
+                    <div class="flex justify-end">
+                        <button id="closeModal" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label for="studentIdInput" class="block text-sm font-medium text-gray-700 mb-1">Masukkan ID Siswa:</label>
+            <input type="text" id="studentIdInput" placeholder="Masukkan ID Siswa" class="w-full p-2 mb-4 border rounded-md">
+        </div>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Fungsi logout
+        function logout() {
+            localStorage.removeItem('studentProfileId');
+            window.location.href = 'index.html';
+        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            const toast = document.getElementById('toast');
+            const showToast = (message) => {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            };
+
+            const loadingElement = document.getElementById('loading');
+            const profileContent = document.getElementById('profile-content');
+            const profileNavLink = document.getElementById('profileNavLink');
+            const profileMessage = document.getElementById('profile-message-content');
+            const uploadModal = document.getElementById('uploadModal');
+            const closeModalButton = document.getElementById('closeModal');
+            const photoUploadInput = document.getElementById('photo-upload');
+            const photoPreview = document.getElementById('photo-preview');
+            const uploadButton = document.getElementById('upload-btn');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            let profileId = urlParams.get('id');
+            
+            if (!profileId) {
+                profileId = localStorage.getItem('studentProfileId');
+                if (profileId) {
+                    window.history.replaceState({}, '', `profile.html?id=${profileId}`);
+                }
+            }
+
+            if (!profileId) {
+                document.getElementById('no-id-message').style.display = 'block';
+                loadingElement.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+                return;
+            }
+
+            localStorage.setItem('studentProfileId', profileId);
+            profileNavLink.href = `profile.html?id=${profileId}`;
+
+            try {
+                const { data, error } = await supabase
+                    .from('students')
+                    .select('*')
+                    .eq('id', profileId)
+                    .single();
+                
+                if (error) throw error;
+                
+                if (data) {
+                    document.getElementById('name').textContent = data.full_name || '-';
+                    document.getElementById('birth-place-date').textContent = `${data.birth_place || '-'}, ${data.birth_date || '-'}`;
+                    document.getElementById('nis').textContent = data.nis || '-';
+                    document.getElementById('nisn').textContent = data.nisn || '-';
+                    document.getElementById('class').textContent = data.class || '-';
+                    document.getElementById('address').textContent = data.address || '-';
+                    
+                    if (data.photo_url) {
+                        photoPreview.src = data.photo_url;
+                    }
+                    
+                    profileMessage.textContent = `Profil ID: ${profileId}`;
+                    
+                    loadingElement.style.display = 'none';
+                    profileContent.style.display = 'block';
+                } else {
+                    throw new Error('Profil tidak ditemukan');
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                profileMessage.textContent = `Error: Tidak dapat memuat profil. Pastikan ID benar atau coba lagi nanti.`;
+                loadingElement.style.display = 'none';
+                profileContent.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+            }
+
+            document.getElementById('skeleton-loader').style.display = 'none';
+
+            uploadButton.addEventListener('click', () => {
+                photoUploadInput.click();
+            });
+
+            photoUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        photoPreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            photoUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                    alert('Hanya file JPEG atau PNG yang diperbolehkan');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar. Maksimum 5MB.');
+                    return;
+                }
+                
+                try {
+                    loadingElement.style.display = 'block';
+                    
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${profileId}_${Date.now()}.${fileExt}`;
+                    const filePath = `student-photos/${fileName}`;
+                    
+                    const { error: uploadError } = await supabase.storage
+                        .from('yearbook-photos')
+                        .upload(filePath, file);
+                    
+                    if (uploadError) {
+                        if (uploadError.message.includes('size')) {
+                            throw new Error('Ukuran file terlalu besar untuk bucket ini.');
+                        }
+                        throw uploadError;
+                    }
+                    
+                    const { data: urlData } = supabase.storage
+                        .from('yearbook-photos')
+                        .getPublicUrl(filePath);
+                    const publicUrl = urlData.publicUrl;
+                    
+                    if (!publicUrl) {
+                        throw new Error('Gagal mendapatkan URL publik untuk foto.');
+                    }
+                    
+                    const { error: updateError } = await supabase
+                        .from('students')
+                        .update({ photo_url: publicUrl })
+                        .eq('id', profileId);
+                    
+                    if (updateError) throw updateError;
+                    
+                    photoPreview.src = publicUrl;
+                    uploadModal.classList.add('show');
+                    showToast('Foto profil berhasil diperbarui!');
+                    
+                } catch (error) {
+                    console.error('Error uploading photo:', error);
+                    alert(`Gagal mengunggah foto: ${error.message}`);
+                } finally {
+                    loadingElement.style.display = 'none';
+                }
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                uploadModal.classList.remove('show');
+            });
+
+            document.getElementById('uploadPhotoButton').addEventListener('click', async () => {
+                const studentIdInput = document.getElementById('studentIdInput');
+                const input = document.getElementById('uploadPhotoInput');
+                const file = input.files[0];
+
+                // Validasi ID
+                const studentId = studentIdInput.value.trim();
+                if (!studentId) {
+                    alert('Harap masukkan ID siswa terlebih dahulu!');
+                    return;
+                }
+
+                // Validasi file
+                if (!file) {
+                    alert('Pilih file terlebih dahulu!');
+                    return;
+                }
+
+                try {
+                    const filePath = `profile-photos/${studentId}-${file.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('student-photos') // Bucket tempat menyimpan foto
+                        .upload(filePath, file);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    // Dapatkan URL publik untuk foto yang diunggah
+                    const { data: publicUrlData } = supabase.storage
+                        .from('student-photos')
+                        .getPublicUrl(filePath);
+
+                    const photoUrl = publicUrlData.publicUrl;
+
+                    // Simpan URL foto ke tabel 'students'
+                    const { error: updateError } = await supabase
+                        .from('students')
+                        .update({ photo_url: photoUrl })
+                        .eq('id', studentId);
+
+                    if (updateError) {
+                        throw updateError;
+                    }
+
+                    alert('Foto berhasil diunggah!');
+                    // Refresh halaman atau tampilkan foto baru
+                    document.getElementById('profilePhoto').src = photoUrl;
+                } catch (error) {
+                    console.error('Error uploading photo:', error.message);
+                    alert(`Gagal mengunggah foto: ${error.message}`);
+                }
+            });
+
+            // Fungsi untuk mengunggah atau mengganti foto
+            async function uploadPhoto() {
+                const fileInput = document.getElementById('photoUpload');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Pilih foto dulu!');
+                    return;
+                }
+
+                const fileName = `student-photos/${file.name}`; // Simpan di bucket student-photos
+                try {
+                    // Upload file ke Supabase Storage
+                    const { error: uploadError } = await supabase.storage
+                        .from('student-photos')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: true // Ganti file jika sudah ada
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    // Dapatkan URL publik file yang diunggah
+                    const { data: { publicUrl }, error: urlError } = supabase.storage
+                        .from('student-photos')
+                        .getPublicUrl(fileName);
+
+                    if (urlError) throw urlError;
+
+                    alert('Foto berhasil diunggah!');
+                    console.log('Public URL Foto:', publicUrl);
+
+                    fileInput.value = ''; // Reset input file
+                    await displayPhotos(); // Refresh galeri foto
+                } catch (error) {
+                    console.error('Error mengunggah foto:', error.message);
+                    alert(`Gagal mengunggah foto: ${error.message}`);
+                }
+            }
+        });
     </script>
 </body>
 </html>
