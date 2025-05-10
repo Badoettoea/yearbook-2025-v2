@@ -130,24 +130,7 @@ body {
   margin: 0.25rem 0;
 }
 
-/* ===== ACTION BUTTONS ===== */
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  padding: 0.5rem;
-}
 
-.like-btn, .share-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.9rem;
-}
-
-.like-btn.liked {
-  color: var(--pink);
-  font-weight: 600;
-}
 
 /* ===== MODAL (MOBILE FRIENDLY) ===== */
 .comment-modal {

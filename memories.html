@@ -219,35 +219,6 @@
             background-color: #f472b6;
             color: white;
         }
-        .photo-container .action-buttons {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            display: flex;
-            gap: 0.5rem;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-        }
-        .photo-container .like-btn, .photo-container .share-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            cursor: pointer;
-            color: #fff;
-            font-size: 0.8rem;
-            transition: color 0.3s;
-        }
-        .photo-container .like-btn:hover {
-            color: #f472b6;
-        }
-        .photo-container .share-btn:hover {
-            color: #008080;
-        }
-        .photo-container .like-btn.liked {
-            color: #f472b6;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -320,7 +291,6 @@
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // Variabel global
             let currentSlide = 0;
             let slides = [];
             let autoSlideInterval;
@@ -340,19 +310,14 @@
                         });
                     if (error) throw error;
 
-                    console.log('Files from bucket:', files);
-
                     const imageFiles = files.filter(file =>
                         file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
                     );
-
-                    console.log('Filtered image files:', imageFiles);
 
                     return imageFiles.map(file => {
                         const { data: { publicUrl } } = supabase.storage
                             .from('gallery')
                             .getPublicUrl(file.name);
-                        console.log('Public URL:', publicUrl);
                         return publicUrl;
                     });
                 } catch (error) {
@@ -425,72 +390,6 @@
                 }
             }
 
-            // Fungsi untuk menangani like
-            async function likePhoto(photoId, userId) {
-                try {
-                    const { data: existingLike, error: checkError } = await supabase
-                        .from('comments')
-                        .select('id')
-                        .eq('photo_id', photoId)
-                        .eq('user_id', userId)
-                        .eq('action_type', 'like')
-                        .single();
-
-                    if (checkError && checkError.code !== 'PGRST116') throw checkError;
-
-                    if (existingLike) {
-                        const { error } = await supabase
-                            .from('comments')
-                            .delete()
-                            .eq('id', existingLike.id);
-                        if (error) throw error;
-                        return { action: 'unlike' };
-                    } else {
-                        const { error } = await supabase
-                            .from('comments')
-                            .insert({
-                                photo_id: photoId,
-                                user_id: userId,
-                                action_type: 'like'
-                            });
-                        if (error) throw error;
-                        return { action: 'like' };
-                    }
-                } catch (error) {
-                    console.error('Error handling like:', error.message);
-                    alert(`Gagal menangani like: ${error.message}`);
-                    return null;
-                }
-            }
-
-            // Fungsi untuk menangani share
-            async function sharePhoto(photoId, userId, photoUrl) {
-                try {
-                    const { error } = await supabase
-                        .from('comments')
-                        .insert({
-                            photo_id: photoId,
-                            user_id: userId,
-                            action_type: 'share'
-                        });
-                    if (error) throw error;
-
-                    if (navigator.share) {
-                        await navigator.share({
-                            title: 'Foto Yearbook 2025',
-                            text: 'Lihat kenangan keren ini!',
-                            url: photoUrl
-                        });
-                    } else {
-                        await navigator.clipboard.writeText(photoUrl);
-                        alert('Link foto telah disalin ke clipboard!');
-                    }
-                } catch (error) {
-                    console.error('Error handling share:', error.message);
-                    alert(`Gagal menangani share: ${error.message}`);
-                }
-            }
-
             // Fungsi untuk menampilkan foto dan komentar
             async function displayPhotos() {
                 const carouselSlides = document.getElementById('carousel-slides');
@@ -501,10 +400,6 @@
 
                 const photos = await getAllPhotosFromStorage();
                 const comments = await getCommentsWithPhotos();
-                const userId = localStorage.getItem('studentProfileId') || 'anonymous';
-
-                console.log('Photos:', photos);
-                console.log('Comments from DB:', comments);
 
                 carouselSlides.innerHTML = '';
                 photoGrid.innerHTML = '';
@@ -525,11 +420,6 @@
                         const photoComments = comments
                             .filter(c => c.photo_id === photoName && c.action_type === 'comment')
                             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                        const photoLikes = comments.filter(c => c.photo_id === photoName && c.action_type === 'like');
-                        const userLiked = photoLikes.some(like => like.user_id === userId);
-                        const photoShares = comments.filter(c => c.photo_id === photoName && c.action_type === 'share');
-
-                        console.log(`Photo: ${photoName}, Comments:`, photoComments, `Likes:`, photoLikes, `Shares:`, photoShares);
 
                         const commentHtml = photoComments.length > 0
                             ? photoComments.map(c => `<p class="text-gray-800">${c.comment} <small class="text-gray-500">(${c.user_id})</small></p>`).join('')
@@ -540,38 +430,15 @@
                         gridItem.innerHTML = `
                             <div class="photo-container">
                                 <img src="${photo}" alt="Foto ${index + 1}" loading="lazy" onerror="console.error('Gagal memuat gambar di grid: ${photo}')">
-                                <div class="action-buttons">
-                                    <span class="like-btn ${userLiked ? 'liked' : ''}" id="like-${photoName}">
-                                        ❤️ ${photoLikes.length}
-                                    </span>
-                                    <span class="share-btn" id="share-${photoName}">
-                                        🔗 ${photoShares.length}
-                                    </span>
-                                </div>
                             </div>
                             <div class="comments-section" id="comments-${index}">
                                 ${commentHtml}
                             </div>
                         `;
-                        gridItem.onclick = (e) => {
-                            if (e.target.classList.contains('like-btn') || e.target.classList.contains('share-btn')) return;
+                        gridItem.onclick = () => {
                             openCommentModal(photoName, photo);
                         };
                         photoGrid.appendChild(gridItem);
-
-                        // Event listener untuk like
-                        document.getElementById(`like-${photoName}`).addEventListener('click', async () => {
-                            const result = await likePhoto(photoName, userId);
-                            if (result) {
-                                await displayPhotos();
-                            }
-                        });
-
-                        // Event listener untuk share
-                        document.getElementById(`share-${photoName}`).addEventListener('click', async () => {
-                            await sharePhoto(photoName, userId, photo);
-                            await displayPhotos();
-                        });
                     });
 
                     createIndicators(photos.length);
@@ -587,7 +454,6 @@
             function openCommentModal(photoId, photoUrl) {
                 currentPhotoId = photoUrl.split('/').pop();
                 currentPhotoUrl = photoUrl;
-                console.log(`Opening modal: photoId=${currentPhotoId}, photoUrl=${photoUrl}`);
                 document.getElementById('modalPhoto').src = photoUrl;
                 document.getElementById('commentModal').style.display = 'flex';
             }
@@ -608,7 +474,6 @@
                     return;
                 }
 
-                console.log('Validating photo_id:', currentPhotoId);
                 const isValidPhoto = await validatePhotoId(currentPhotoId);
                 if (!isValidPhoto) {
                     alert('Foto tidak valid! Pastikan foto ada di bucket gallery.');
@@ -643,8 +508,6 @@
                         .order('created_at', { ascending: false });
                     if (error) throw error;
 
-                    console.log('Raw comments from Supabase:', comments);
-
                     return comments.map(comment => {
                         const { data: { publicUrl } } = supabase.storage
                             .from('gallery')
@@ -671,7 +534,6 @@
                         console.error('Error memvalidasi photo_id:', error);
                         return false;
                     }
-                    console.log('Files in bucket:', files.map(f => f.name));
                     return files.some(file => file.name === photoId);
                 } catch (error) {
                     console.error('Error di validatePhotoId:', error);
@@ -688,7 +550,7 @@
                     return;
                 }
 
-                const fileName = `${Date.now()}_${file.name}`; // Tambahkan timestamp untuk nama unik
+                const fileName = `${Date.now()}_${file.name}`; // Nama unik
                 try {
                     const { error } = await supabase.storage
                         .from('gallery')
@@ -700,8 +562,8 @@
                     if (error) throw error;
 
                     alert('Foto berhasil diunggah!');
-                    fileInput.value = ''; // Reset input file
-                    await displayPhotos(); // Refresh foto setelah upload
+                    fileInput.value = '';
+                    await displayPhotos();
                 } catch (error) {
                     console.error('Error mengunggah foto:', error.message);
                     alert(`Gagal mengunggah foto: ${error.message}`);
