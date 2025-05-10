@@ -113,12 +113,8 @@
             animation: pulse 1.5s infinite;
         }
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         #skeleton-loader > div {
             animation: pulse 1.5s infinite;
@@ -133,7 +129,7 @@
                 flex-direction: column;
                 align-items: center;
             }
-            #photo-preview {
+            #user-photo {
                 width: 100%;
                 height: auto;
                 max-width: 256px;
@@ -186,16 +182,16 @@
                     <!-- Foto pengguna -->
                     <img id="user-photo" src="default-photo.jpg" alt="Foto Profil" class="w-32 h-32 rounded-full mb-4 object-cover">
                     
-                    <!-- Input file untuk upload -->
-                    <input type="file" id="photoUpload" accept="image/*" class="hidden" onchange="previewPhoto(event)">
-                    <label for="photoUpload" class="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-600 transition">
-                        Pilih Foto
-                    </label>
-                    
-                    <!-- Tombol upload -->
-                    <button onclick="uploadPhoto()" class="bg-green-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition mt-4">
-                        Unggah Foto
-                    </button>
+                    <!-- Input file dan tombol -->
+                    <div class="flex space-x-4">
+                        <input type="file" accept="image/*" class="hidden" onchange="previewPhoto(event)">
+                        <button onclick="document.querySelector('input[type=file]').click()" class="cursor-pointer bg-blue-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-600 transition">
+                            Pilih Foto
+                        </button>
+                        <button onclick="uploadPhoto()" class="bg-green-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition">
+                            Submit
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -209,11 +205,6 @@
                 </div>
             </div>
         </div>
-
-        <div>
-            <label for="studentIdInput" class="block text-sm font-medium text-gray-700 mb-1">Masukkan ID Siswa:</label>
-            <input type="text" id="studentIdInput" placeholder="Masukkan ID Siswa" class="w-full p-2 mb-4 border rounded-md">
-        </div>
     </main>
 
     <div id="toast" class="toast"></div>
@@ -224,6 +215,19 @@
             localStorage.removeItem('studentProfileId');
             window.location.href = 'index.html';
         }
+
+        // Fungsi preview foto
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('user-photo').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
@@ -242,9 +246,6 @@
             const profileMessage = document.getElementById('profile-message-content');
             const uploadModal = document.getElementById('uploadModal');
             const closeModalButton = document.getElementById('closeModal');
-            const photoUploadInput = document.getElementById('photo-upload');
-            const photoPreview = document.getElementById('photo-preview');
-            const uploadButton = document.getElementById('upload-btn');
 
             const urlParams = new URLSearchParams(window.location.search);
             let profileId = urlParams.get('id');
@@ -257,8 +258,9 @@
             }
 
             if (!profileId) {
-                document.getElementById('no-id-message').style.display = 'block';
+                profileMessage.textContent = 'ID siswa tidak ditemukan. Kembali ke beranda...';
                 loadingElement.style.display = 'none';
+                profileContent.style.display = 'block';
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 3000);
@@ -278,19 +280,8 @@
                 if (error) throw error;
                 
                 if (data) {
-                    document.getElementById('name').textContent = data.full_name || '-';
-                    document.getElementById('birth-place-date').textContent = `${data.birth_place || '-'}, ${data.birth_date || '-'}`;
-                    document.getElementById('nis').textContent = data.nis || '-';
-                    document.getElementById('nisn').textContent = data.nisn || '-';
-                    document.getElementById('class').textContent = data.class || '-';
-                    document.getElementById('address').textContent = data.address || '-';
-                    
-                    if (data.photo_url) {
-                        photoPreview.src = data.photo_url;
-                    }
-                    
+                    document.getElementById('user-photo').src = data.photo_url || 'default-photo.jpg';
                     profileMessage.textContent = `Profil ID: ${profileId}`;
-                    
                     loadingElement.style.display = 'none';
                     profileContent.style.display = 'block';
                 } else {
@@ -306,176 +297,62 @@
                 }, 3000);
             }
 
-            document.getElementById('skeleton-loader').style.display = 'none';
-
-            uploadButton.addEventListener('click', () => {
-                photoUploadInput.click();
-            });
-
-            photoUploadInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        photoPreview.src = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            photoUploadInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                    alert('Hanya file JPEG atau PNG yang diperbolehkan');
-                    return;
-                }
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('Ukuran file terlalu besar. Maksimum 5MB.');
-                    return;
-                }
-                
-                try {
-                    loadingElement.style.display = 'block';
-                    
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${profileId}_${Date.now()}.${fileExt}`;
-                    const filePath = `student-photos/${fileName}`;
-                    
-                    const { error: uploadError } = await supabase.storage
-                        .from('yearbook-photos')
-                        .upload(filePath, file);
-                    
-                    if (uploadError) {
-                        if (uploadError.message.includes('size')) {
-                            throw new Error('Ukuran file terlalu besar untuk bucket ini.');
-                        }
-                        throw uploadError;
-                    }
-                    
-                    const { data: urlData } = supabase.storage
-                        .from('yearbook-photos')
-                        .getPublicUrl(filePath);
-                    const publicUrl = urlData.publicUrl;
-                    
-                    if (!publicUrl) {
-                        throw new Error('Gagal mendapatkan URL publik untuk foto.');
-                    }
-                    
-                    const { error: updateError } = await supabase
-                        .from('students')
-                        .update({ photo_url: publicUrl })
-                        .eq('id', profileId);
-                    
-                    if (updateError) throw updateError;
-                    
-                    photoPreview.src = publicUrl;
-                    uploadModal.classList.add('show');
-                    showToast('Foto profil berhasil diperbarui!');
-                    
-                } catch (error) {
-                    console.error('Error uploading photo:', error);
-                    alert(`Gagal mengunggah foto: ${error.message}`);
-                } finally {
-                    loadingElement.style.display = 'none';
-                }
-            });
-
             closeModalButton.addEventListener('click', () => {
                 uploadModal.classList.remove('show');
             });
 
-            document.getElementById('uploadPhotoButton').addEventListener('click', async () => {
-                const studentIdInput = document.getElementById('studentIdInput');
-                const input = document.getElementById('uploadPhotoInput');
-                const file = input.files[0];
-
-                // Validasi ID
-                const studentId = studentIdInput.value.trim();
-                if (!studentId) {
-                    alert('Harap masukkan ID siswa terlebih dahulu!');
-                    return;
-                }
-
-                // Validasi file
-                if (!file) {
-                    alert('Pilih file terlebih dahulu!');
-                    return;
-                }
-
-                try {
-                    const filePath = `profile-photos/${studentId}-${file.name}`;
-                    const { data, error } = await supabase.storage
-                        .from('student-photos') // Bucket tempat menyimpan foto
-                        .upload(filePath, file);
-
-                    if (error) {
-                        throw error;
-                    }
-
-                    // Dapatkan URL publik untuk foto yang diunggah
-                    const { data: publicUrlData } = supabase.storage
-                        .from('student-photos')
-                        .getPublicUrl(filePath);
-
-                    const photoUrl = publicUrlData.publicUrl;
-
-                    // Simpan URL foto ke tabel 'students'
-                    const { error: updateError } = await supabase
-                        .from('students')
-                        .update({ photo_url: photoUrl })
-                        .eq('id', studentId);
-
-                    if (updateError) {
-                        throw updateError;
-                    }
-
-                    alert('Foto berhasil diunggah!');
-                    // Refresh halaman atau tampilkan foto baru
-                    document.getElementById('profilePhoto').src = photoUrl;
-                } catch (error) {
-                    console.error('Error uploading photo:', error.message);
-                    alert(`Gagal mengunggah foto: ${error.message}`);
-                }
-            });
-
-            // Fungsi untuk mengunggah atau mengganti foto
             async function uploadPhoto() {
-                const fileInput = document.getElementById('photoUpload');
+                const fileInput = document.querySelector('input[type=file]');
                 const file = fileInput.files[0];
                 if (!file) {
-                    alert('Pilih foto dulu!');
+                    showToast('Pilih foto dulu, bro!');
                     return;
                 }
 
-                const fileName = `student-photos/${file.name}`; // Simpan di bucket student-photos
+                if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                    showToast('Hanya file JPEG atau PNG yang diperbolehkan!');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Ukuran file terlalu besar. Maksimum 5MB.');
+                    return;
+                }
+
                 try {
-                    // Upload file ke Supabase Storage
+                    loadingElement.style.display = 'block';
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${profileId}_${Date.now()}.${fileExt}`;
+                    const filePath = `${fileName}`; // Simpan di root bucket student-photos
+
                     const { error: uploadError } = await supabase.storage
                         .from('student-photos')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: true // Ganti file jika sudah ada
-                        });
+                        .upload(filePath, file, { upsert: true });
 
                     if (uploadError) throw uploadError;
 
-                    // Dapatkan URL publik file yang diunggah
-                    const { data: { publicUrl }, error: urlError } = supabase.storage
+                    const { data: urlData } = supabase.storage
                         .from('student-photos')
-                        .getPublicUrl(fileName);
+                        .getPublicUrl(filePath);
+                    const publicUrl = urlData.publicUrl;
 
-                    if (urlError) throw urlError;
+                    if (!publicUrl) throw new Error('Gagal mendapatkan URL publik.');
 
-                    alert('Foto berhasil diunggah!');
-                    console.log('Public URL Foto:', publicUrl);
+                    const { error: updateError } = await supabase
+                        .from('students')
+                        .update({ photo_url: publicUrl })
+                        .eq('id', profileId);
 
-                    fileInput.value = ''; // Reset input file
-                    await displayPhotos(); // Refresh galeri foto
+                    if (updateError) throw updateError;
+
+                    document.getElementById('user-photo').src = publicUrl;
+                    uploadModal.classList.add('show');
+                    showToast('Foto profil berhasil diperbarui, bro!');
                 } catch (error) {
-                    console.error('Error mengunggah foto:', error.message);
-                    alert(`Gagal mengunggah foto: ${error.message}`);
+                    console.error('Error uploading photo:', error);
+                    showToast(`Gagal mengunggah foto: ${error.message}`);
+                } finally {
+                    loadingElement.style.display = 'none';
+                    fileInput.value = ''; // Reset input
                 }
             }
         });
