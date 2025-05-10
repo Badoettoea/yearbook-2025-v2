@@ -1,0 +1,39 @@
+/* ===== VARIABLES & RESET ===== */
+:root {
+  --teal: #008080;
+  --teal-light: #00a3a3;
+  --pink: #f472b6;
+  --white: #ffffff;
+  --gray-light: #f8fafc;
+  --gray-dark: #333333;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== BASE STYLES (MOBILE FIRST) ===== */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  color: var(--gray-dark);
+  line-height: 1.6;
+  padding: 0;
+}
+
+/* ... (salin semua CSS dari snippet, termasuk header, carousel, photo grid, dll.) ... */
+
+/* Tambah scroll styling untuk comments-section biar konsisten dengan memories.html */
+.comments-section::-webkit-scrollbar {
+  width: 6px;
+}
+.comments-section::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 3px;
+}
+.comments-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
