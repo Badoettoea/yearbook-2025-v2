@@ -45,7 +45,6 @@
             transform: translateY(0);
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-6558bf24.js"></script>
 </head>
 <body class="text-gray-800">
     <header class="header-custom bg-pink-500 text-white p-4">
@@ -212,7 +211,13 @@
         });
     </script>
 
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script>
+      const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+      // ...kode Anda...
+    </script>
     
 </body>
 </html>

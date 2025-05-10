@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearbook 2025 - Memories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #008080;
+        }
+        .header-custom {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .carousel-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 14px;
+            background-color: #f8fafc;
+        }
+        .carousel-slide {
+            display: none;
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+            background-color: white;
+            transition: opacity 0.5s ease;
+        }
+        .carousel-slide.active {
+            display: block;
+            opacity: 1;
+        }
+        .carousel-slide.fade-out {
+            opacity: 0;
+        }
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 18px;
+            z-index: 10;
+            transition: background-color 0.3s;
+        }
+        .carousel-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .prev-btn {
+            left: 10px;
+        }
+        .next-btn {
+            right: 10px;
+        }
+        .play-pause-btn {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 10;
+            font-family: 'Poppins', sans-serif;
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .grid-item {
+            display: flex;
+            align-items: flex-start;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            min-height: 150px;
+        }
+        .grid-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .grid-item .photo-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+        .grid-item img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px 0 0 8px;
+        }
+        .comments-section {
+            flex: 1;
+            margin-left: 0.5rem;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            color: #333;
+            background-color: #fff;
+            font-size: 0.9rem;
+        }
+        .comments-section p {
+            margin: 0.25rem 0;
+            line-height: 1.4;
+        }
+        .comments-section small {
+            color: #666;
+            font-style: italic;
+        }
+        .comments-section::-webkit-scrollbar {
+            width: 6px;
+        }
+        .comments-section::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 3px;
+        }
+        .comments-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .no-photos {
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            grid-column: 1 / -1;
+        }
+        .loading {
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .indicator.active {
+            background-color: white;
+            transform: scale(1.2);
+        }
+        .comment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+        .comment-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .comment-modal-content img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .comment-modal-content input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .comment-modal-content button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .comment-modal-content .cancel-btn {
+            background-color: #e0e0e0;
+        }
+        .comment-modal-content .submit-btn {
+            background-color: #f472b6;
+            color: white;
+        }
+    </style>
+  <link rel="stylesheet" href="/assets/memories-2169ebdb.css">
+</head>
+<body class="text-gray-800">
+    <header class="header-custom bg-pink-500 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-semibold">Yearbook 2025</h1>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="hover:underline">Home</a>
+                <a href="profile.html" class="hover:underline">Profile</a>
+                <a href="gallery.html" class="hover:underline">Gallery</a>
+                <a href="memories.html" class="hover:underline font-medium">Memories</a>
+                <a href="index.html" class="hover:underline" onclick="logout()">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-white">Kenangan Digital</h2>
+            <div class="carousel-container">
+                <div id="carousel-slides" class="loading">Memuat foto...</div>
+                <button class="carousel-btn prev-btn" onclick="changeSlide(-1)">❮</button>
+                <button class="carousel-btn next-btn" onclick="changeSlide(1)">❯</button>
+                <button id="play-pause-btn" class="play-pause-btn">Pause</button>
+                <div class="carousel-indicators" id="indicators"></div>
+            </div>
+        </section>
+
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-white">Photo Gallery</h2>
+            <div id="photo-grid" class="photo-grid loading">Memuat foto...</div>
+        </section>
+
+        <div id="commentModal" class="comment-modal">
+            <div class="comment-modal-content">
+                <img id="modalPhoto" src="" alt="Selected Photo">
+                <h3 class="text-lg font-semibold mb-4">Tambah Komentar</h3>
+                <input type="text" id="commentInput" placeholder="Tulis komentar Anda..." />
+                <div>
+                    <button class="cancel-btn" id="cancelComment">Batal</button>
+                    <button class="submit-btn" id="submitComment">Kirim</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-white">Unggah Foto Kenangan</h2>
+            <div class="flex justify-center">
+                <input type="file" id="photoUpload" accept="image/*" class="hidden" />
+                <label for="photoUpload" class="cursor-pointer bg-pink-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-pink-600 transition">
+                    Pilih Foto
+                </label>
+                <button id="uploadPhotoBtn" class="bg-green-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition ml-4">
+                    Unggah Foto
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Fungsi logout
+        function logout() {
+            localStorage.removeItem('studentProfileId');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inisialisasi Supabase
+            const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            let currentSlide = 0;
+            let slides = [];
+            let autoSlideInterval;
+            let isPlaying = true;
+            const slideInterval = 3000;
+            let currentPhotoId = null;
+            let currentPhotoUrl = null;
+
+            // Fungsi untuk mendapatkan semua foto dari storage
+            async function getAllPhotosFromStorage() {
+                try {
+                    const { data: files, error } = await supabase.storage
+                        .from('gallery')
+                        .list('', {
+                            limit: 1000,
+                            sortBy: { column: 'created_at', order: 'desc' }
+                        });
+                    if (error) throw error;
+
+                    const imageFiles = files.filter(file =>
+                        file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                    );
+
+                    return imageFiles.map(file => {
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('gallery')
+                            .getPublicUrl(file.name);
+                        return publicUrl;
+                    });
+                } catch (error) {
+                    console.error("Error mengambil foto dari storage:", error);
+                    return [];
+                }
+            }
+
+            // Fungsi untuk memulai auto slide
+            function startAutoSlide() {
+                if (slides.length <= 1) return;
+                autoSlideInterval = setInterval(() => {
+                    changeSlide(1);
+                }, slideInterval);
+                isPlaying = true;
+                document.getElementById('play-pause-btn').textContent = 'Pause';
+            }
+
+            // Fungsi untuk menghentikan auto slide
+            function stopAutoSlide() {
+                clearInterval(autoSlideInterval);
+                isPlaying = false;
+                document.getElementById('play-pause-btn').textContent = 'Play';
+            }
+
+            // Fungsi untuk toggle play/pause
+            function togglePlayPause() {
+                if (isPlaying) {
+                    stopAutoSlide();
+                } else {
+                    startAutoSlide();
+                }
+            }
+
+            // Fungsi untuk mengganti slide
+            window.changeSlide = function(direction) {
+                if (slides.length === 0) return;
+                slides[currentSlide].classList.add('fade-out');
+                setTimeout(() => {
+                    slides[currentSlide].classList.remove('active', 'fade-out');
+                    currentSlide = (currentSlide + direction + slides.length) % slides.length;
+                    slides[currentSlide].classList.add('active');
+                    updateIndicators();
+                }, 300);
+            };
+
+            // Fungsi untuk update indicator
+            function updateIndicators() {
+                const indicators = document.querySelectorAll('.indicator');
+                indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === currentSlide);
+                });
+            }
+
+            // Fungsi untuk membuat indicators
+            function createIndicators(count) {
+                const container = document.getElementById('indicators');
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const indicator = document.createElement('div');
+                    indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
+                    indicator.onclick = () => {
+                        const direction = i > currentSlide ? 1 : -1;
+                        const steps = Math.abs(i - currentSlide);
+                        for (let s = 0; s < steps; s++) {
+                            setTimeout(() => changeSlide(direction), s * 100);
+                        }
+                    };
+                    container.appendChild(indicator);
+                }
+            }
+
+            // Fungsi untuk menampilkan foto dan komentar
+            async function displayPhotos() {
+                const carouselSlides = document.getElementById('carousel-slides');
+                const photoGrid = document.getElementById('photo-grid');
+
+                carouselSlides.innerHTML = '<div class="loading">Memuat foto kenangan...</div>';
+                photoGrid.innerHTML = '<div class="loading">Memuat galeri foto...</div>';
+
+                const photos = await getAllPhotosFromStorage();
+                const comments = await getCommentsWithPhotos();
+
+                carouselSlides.innerHTML = '';
+                photoGrid.innerHTML = '';
+
+                if (photos.length > 0) {
+                    photos.forEach((photo, index) => {
+                        const slide = document.createElement('img');
+                        slide.src = photo;
+                        slide.alt = `Foto Kenangan ${index + 1}`;
+                        slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                        slide.loading = "lazy";
+                        slide.onerror = () => console.error(`Gagal memuat gambar di carousel: ${photo}`);
+                        carouselSlides.appendChild(slide);
+                    });
+
+                    photos.forEach((photo, index) => {
+                        const photoName = photo.split('/').pop();
+                        const photoComments = comments
+                            .filter(c => c.photo_id === photoName && c.action_type === 'comment')
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                        const commentHtml = photoComments.length > 0
+                            ? photoComments.map(c => `<p class="text-gray-800">${c.comment} <small class="text-gray-500">(${c.user_id})</small></p>`).join('')
+                            : '<p class="text-gray-500">Belum ada komentar</p>';
+
+                        const gridItem = document.createElement('div');
+                        gridItem.className = 'grid-item';
+                        gridItem.innerHTML = `
+                            <div class="photo-container">
+                                <img src="${photo}" alt="Foto ${index + 1}" loading="lazy" onerror="console.error('Gagal memuat gambar di grid: ${photo}')">
+                            </div>
+                            <div class="comments-section" id="comments-${index}">
+                                ${commentHtml}
+                            </div>
+                        `;
+                        gridItem.onclick = () => {
+                            openCommentModal(photoName, photo);
+                        };
+                        photoGrid.appendChild(gridItem);
+                    });
+
+                    createIndicators(photos.length);
+                    slides = document.querySelectorAll('.carousel-slide');
+                    startAutoSlide();
+                } else {
+                    carouselSlides.innerHTML = '<div class="no-photos">Belum ada foto kenangan</div>';
+                    photoGrid.innerHTML = '<div class="no-photos">Belum ada foto yang diunggah</div>';
+                }
+            }
+
+            // Fungsi untuk modal komentar
+            function openCommentModal(photoId, photoUrl) {
+                currentPhotoId = photoUrl.split('/').pop();
+                currentPhotoUrl = photoUrl;
+                document.getElementById('modalPhoto').src = photoUrl;
+                document.getElementById('commentModal').style.display = 'flex';
+            }
+
+            // Fungsi untuk menutup modal
+            function closeCommentModal() {
+                document.getElementById('commentModal').style.display = 'none';
+                document.getElementById('commentInput').value = '';
+                document.getElementById('modalPhoto').src = '';
+            }
+
+            // Fungsi untuk submit komentar
+            async function submitComment() {
+                const commentText = document.getElementById('commentInput').value.trim();
+                const userId = localStorage.getItem('studentProfileId') || 'anonymous';
+                if (!commentText || !currentPhotoId) {
+                    alert('Komentar atau ID foto tidak valid!');
+                    return;
+                }
+
+                const isValidPhoto = await validatePhotoId(currentPhotoId);
+                if (!isValidPhoto) {
+                    alert('Foto tidak valid! Pastikan foto ada di bucket gallery.');
+                    return;
+                }
+
+                try {
+                    const { error } = await supabase
+                        .from('comments')
+                        .insert({
+                            photo_id: currentPhotoId,
+                            user_id: userId,
+                            comment: commentText,
+                            action_type: 'comment'
+                        });
+                    if (error) throw error;
+
+                    closeCommentModal();
+                    await displayPhotos();
+                } catch (error) {
+                    console.error('Error menambahkan komentar:', error.message);
+                    alert(`Gagal menambahkan komentar: ${error.message}`);
+                }
+            }
+
+            // Fungsi untuk mendapatkan komentar beserta foto
+            async function getCommentsWithPhotos() {
+                try {
+                    const { data: comments, error } = await supabase
+                        .from('comments')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+
+                    return comments.map(comment => {
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('gallery')
+                            .getPublicUrl(comment.photo_id);
+                        return {
+                            ...comment,
+                            photo_url: publicUrl
+                        };
+                    });
+                } catch (error) {
+                    console.error('Error mengambil komentar:', error.message);
+                    return [];
+                }
+            }
+
+            // Validasi ID foto
+            async function validatePhotoId(photoId) {
+                if (!photoId) return false;
+                try {
+                    const { data: files, error } = await supabase.storage
+                        .from('gallery')
+                        .list('', { limit: 1000 });
+                    if (error) {
+                        console.error('Error memvalidasi photo_id:', error);
+                        return false;
+                    }
+                    return files.some(file => file.name === photoId);
+                } catch (error) {
+                    console.error('Error di validatePhotoId:', error);
+                    return false;
+                }
+            }
+
+            // Fungsi untuk mengunggah foto
+            async function uploadPhoto() {
+                const fileInput = document.getElementById('photoUpload');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Pilih foto dulu!');
+                    return;
+                }
+
+                const fileName = `${Date.now()}_${file.name}`; // Nama unik
+                try {
+                    const { error } = await supabase.storage
+                        .from('gallery')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (error) throw error;
+
+                    alert('Foto berhasil diunggah!');
+                    fileInput.value = '';
+                    await displayPhotos();
+                } catch (error) {
+                    console.error('Error mengunggah foto:', error.message);
+                    alert(`Gagal mengunggah foto: ${error.message}`);
+                }
+            }
+
+            // Event listener utama
+            document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
+            document.getElementById('cancelComment').addEventListener('click', closeCommentModal);
+            document.getElementById('submitComment').addEventListener('click', submitComment);
+            document.getElementById('uploadPhotoBtn').addEventListener('click', uploadPhoto);
+
+            // Jalankan fungsi utama
+            await displayPhotos();
+        });
+    </script>
+</body>
+</html>
