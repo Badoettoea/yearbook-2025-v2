@@ -1,0 +1,17 @@
+{
+  "name": "yearbook-2025",
+  "version": "1.0.0",
+  "description": "Yearbook 2025 Project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0"
+  }
+}
