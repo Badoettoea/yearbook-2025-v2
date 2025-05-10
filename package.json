@@ -1,17 +1,21 @@
 {
   "name": "yearbook-2025",
+  "private": true,
   "version": "1.0.0",
-  "description": "Yearbook 2025 Project",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "preview": "vite preview",
+    "serve": "vite preview --port 8080"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0"
+    "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
-    "vite": "^4.0.0"
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "vite": "^4.4.9"
   }
 }
