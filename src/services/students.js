@@ -1,5 +1,5 @@
 // src/services/students.js
-import supabase from '../supabase'
+import supabase from '../supabase.js'
 import { uploadStudentPhoto, deleteStudentPhoto } from '../utils/storage'
 
 export const getStudent = async (id) => {

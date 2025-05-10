@@ -1,5 +1,5 @@
 // File: src/services/comments.js
-import supabase from '../supabase'
+import supabase from '../supabase.js'
 
 export const getPhotoComments = async (photoId) => {
   const { data, error } = await supabase
