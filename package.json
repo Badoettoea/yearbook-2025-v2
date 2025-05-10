@@ -10,14 +10,10 @@
     "serve": "vite preview --port 8080"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@supabase/supabase-js": "^2.39.0"
-=======
     "@supabase/supabase-js": "^2.49.4",
     "@vitejs/plugin-react": "^4.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
->>>>>>> 42be34c (Selesaikan konflik setelah pull)
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
