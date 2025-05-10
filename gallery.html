@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearbook 2025 - Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #008080;
+        }
+        .header-custom {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .student-card {
+            background-color: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        .student-card:hover {
+            transform: translateY(-5px);
+        }
+        .student-photo {
+            height: 250px;
+            width: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .student-photo:hover {
+            transform: scale(1.02);
+        }
+        .search-input {
+            border-radius: 10px;
+            border: 2px solid #E9D5FF;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: #F472B6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.2);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 14px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+            padding: 2rem;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #333;
+        }
+        .modal-photo {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .upload-btn {
+            cursor: pointer;
+            color: #4B5563;
+        }
+        .upload-btn:hover {
+            color: #1F2937;
+        }
+        .photo-options {
+            position: absolute;
+            top: 1rem;
+            right: 3rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #888;
+        }
+        .photo-options:hover {
+            color: #000;
+        }
+        .ig-modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        .ig-modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #dbdbdb;
+            text-align: center;
+            font-weight: 600;
+        }
+        .ig-modal-body {
+            padding: 0.5rem 0;
+        }
+        .ig-modal-option {
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .ig-modal-option:hover {
+            background-color: #fafafa;
+        }
+        .ig-modal-option.delete {
+            color: #ed4956;
+        }
+        .ig-modal-cancel {
+            padding: 1rem;
+            border-top: 1px solid #dbdbdb;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="header-custom bg-pink-500 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-semibold">Yearbook 2025</h1>
+            <nav class="flex space-x-4">
+                <a href="index.html" class="hover:underline">Home</a>
+                <a href="#" id="profileLink" class="hover:underline">Profile</a>
+                <a href="gallery.html" class="hover:underline font-medium">Gallery</a>
+                <a href="memories.html" class="hover:underline">Memories</a>
+                <a href="index.html" class="hover:underline" onclick="logout()">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <section class="my-8">
+            <h2 class="text-3xl font-semibold text-center mb-6 text-white">Galeri Siswa Kelas 5</h2>
+            
+            <div class="mb-6 max-w-md mx-auto">
+                <input type="text" id="search-input" placeholder="Cari nama siswa..." class="search-input w-full">
+            </div>
+            
+            <div id="loading" class="text-center text-white my-8">
+                <p>Memuat data siswa...</p>
+            </div>
+            
+            <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Student cards will be inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button id="close-modal" class="close-modal">×</button>
+            <span id="photo-options" class="photo-options">⋮</span>
+            <img id="modal-photo" src="" alt="Student Photo" class="modal-photo">
+            <div id="modal-info" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Student info will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="optionsModal" class="modal">
+        <div class="ig-modal">
+            <div class="ig-modal-header">Pilih Aksi</div>
+            <div class="ig-modal-body">
+                <div id="editPhotoOption" class="ig-modal-option">Edit Foto</div>
+                <div id="deletePhotoOption" class="ig-modal-option delete">Hapus Foto</div>
+            </div>
+            <div id="cancelOption" class="ig-modal-cancel">Batal</div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white p-6 text-center">
+        <p>© 2025 Yearbook Kelas 5. All rights reserved.</p>
+        <p class="text-gray-400 text-sm mt-2">Dibuat dengan ❤ oleh Sekolah Dasar Negeri Contoh</p>
+    </footer>
+
+    <script>
+        // Fungsi logout
+        function logout() {
+            localStorage.removeItem('studentProfileId');
+            window.location.href = 'index.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.supabase) {
+                console.error('Supabase library failed to load. Check CDN URL or network.');
+                document.getElementById('gallery-container').innerHTML = 
+                    '<p class="text-red-300 col-span-4 text-center">Gagal memuat Supabase library</p>';
+                return;
+            }
+
+            const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            const userId = localStorage.getItem('studentProfileId') || null;
+            const galleryContainer = document.getElementById('gallery-container');
+            const loadingEl = document.getElementById('loading');
+            const searchInput = document.getElementById('search-input');
+            const modal = document.getElementById('modal');
+            const closeModal = document.getElementById('close-modal');
+            const modalPhoto = document.getElementById('modal-photo');
+            const modalInfo = document.getElementById('modal-info');
+            const profileLink = document.getElementById('profileLink');
+            const photoOptions = document.getElementById('photo-options');
+            const optionsModal = document.getElementById('optionsModal');
+            const editPhotoOption = document.getElementById('editPhotoOption');
+            const deletePhotoOption = document.getElementById('deletePhotoOption');
+            const cancelOption = document.getElementById('cancelOption');
+
+            let currentStudentId = null;
+
+            // Check if profile ID exists in localStorage
+            if (userId) {
+                profileLink.href = `profile.html?id=${userId}`;
+            }
+
+            // Handle profile link in header
+            profileLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (userId) {
+                    window.location.href = `profile.html?id=${userId}`;
+                } else {
+                    modal.style.display = 'flex';
+                    modal.classList.add('show');
+                }
+            });
+
+            async function loadStudents(searchTerm = '') {
+                try {
+                    loadingEl.classList.remove('hidden');
+                    galleryContainer.innerHTML = '';
+                    
+                    let query = supabase
+                        .from('students')
+                        .select('*');
+                    
+                    if (searchTerm) {
+                        query = query.ilike('full_name', `%${searchTerm}%`);
+                    }
+                    
+                    const { data, error } = await query;
+                    
+                    if (error) throw error;
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(student => {
+                            const card = document.createElement('div');
+                            card.className = 'student-card';
+                            card.innerHTML = `
+                                <div>
+                                    <img src="${student.photo_url || 'https://via.placeholder.com/300'}" 
+                                         alt="${student.full_name || 'Student Photo'}" 
+                                         class="student-photo"
+                                         data-student-id="${student.id}">
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg">${student.full_name || 'Nama tidak tersedia'}</h3>
+                                        <p class="text-gray-600">${student.class || '-'}</p>
+                                        <div class="flex justify-between items-center mt-2">
+                                            <a href="profile.html?id=${student.id}" class="text-blue-500 hover:underline">Lihat Profil</a>
+                                            ${student.id === userId ? `
+                                                <label class="upload-btn">
+                                                    <input type="file" class="upload-input hidden" accept="image/*" data-student-id="${student.id}">
+                                                    <span class="text-gray-600 hover:underline">Upload Foto</span>
+                                                </label>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            const photo = card.querySelector('.student-photo');
+                            photo.addEventListener('click', () => openModal(student));
+                            
+                            const uploadInput = card.querySelector('.upload-input');
+                            if (uploadInput) {
+                                uploadInput.addEventListener('change', async (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file) return;
+                                    await uploadPhoto(student.id, file);
+                                });
+                            }
+                            
+                            galleryContainer.appendChild(card);
+                        });
+                    } else {
+                        galleryContainer.innerHTML = '<p class="text-white col-span-4 text-center">Tidak ada siswa yang ditemukan</p>';
+                    }
+                } catch (error) {
+                    console.error('Error loading students:', error.message);
+                    galleryContainer.innerHTML = `<p class="text-red-300 col-span-4 text-center">Gagal memuat data siswa: ${error.message}</p>`;
+                } finally {
+                    loadingEl.classList.add('hidden');
+                }
+            }
+
+            async function uploadPhoto(studentId, file) {
+                try {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${studentId}-${Date.now()}.${fileExt}`;
+                    const filePath = `${fileName}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('student-photos')
+                        .upload(filePath, file);
+                    if (uploadError) throw uploadError;
+
+                    const { data: publicUrlData } = supabase.storage
+                        .from('student-photos')
+                        .getPublicUrl(filePath);
+                    const photoUrl = publicUrlData.publicUrl;
+
+                    const { error: updateError } = await supabase
+                        .from('students')
+                        .update({ photo_url: photoUrl })
+                        .eq('id', studentId);
+                    if (updateError) throw updateError;
+
+                    location.reload();
+                } catch (error) {
+                    console.error('Error uploading photo:', error.message);
+                    alert(`Gagal mengupload foto: ${error.message}`);
+                }
+            }
+
+            async function deletePhoto(studentId, photoUrl) {
+                try {
+                    const fileName = photoUrl.split('/').pop();
+                    const { error: deleteError } = await supabase.storage
+                        .from('student-photos')
+                        .remove([fileName]);
+                    if (deleteError) throw deleteError;
+
+                    const { error: updateError } = await supabase
+                        .from('students')
+                        .update({ photo_url: null })
+                        .eq('id', studentId);
+                    if (updateError) throw updateError;
+
+                    location.reload();
+                } catch (error) {
+                    console.error('Error deleting photo:', error.message);
+                    alert(`Gagal menghapus foto: ${error.message}`);
+                }
+            }
+
+            function openModal(student) {
+                currentStudentId = student.id;
+                modalPhoto.src = student.photo_url || 'https://via.placeholder.com/600';
+                modalPhoto.alt = student.full_name || 'Student Photo';
+                
+                modalInfo.innerHTML = `
+                    <div>
+                        <h3 class="font-bold text-2xl mb-4">${student.full_name || 'Nama tidak tersedia'}</h3>
+                        <p class="mb-2"><span class="font-medium">NIS:</span> ${student.nis || '-'}</p>
+                        <p class="mb-2"><span class="font-medium">NISN:</span> ${student.nisn || '-'}</p>
+                        <p class="mb-2"><span class="font-medium">TTL:</span> ${student.birth_place || '-'}, ${student.birth_date || '-'}</p>
+                    </div>
+                    <div>
+                        <p class="mb-2"><span class="font-medium">Kelas:</span> ${student.class || '-'}</p>
+                        <p class="mb-2"><span class="font-medium">Alamat:</span> ${student.address || '-'}</p>
+                    </div>
+                `;
+                
+                photoOptions.style.display = (student.id === userId && student.photo_url) ? 'block' : 'none';
+                
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModalHandler() {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+                currentStudentId = null;
+            }
+
+            const openOptionsModal = () => {
+                optionsModal.classList.add('show');
+            };
+
+            const closeOptionsModal = () => {
+                optionsModal.classList.remove('show');
+            };
+
+            closeModal.addEventListener('click', closeModalHandler);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModalHandler();
+                }
+            });
+
+            photoOptions.addEventListener('click', openOptionsModal);
+
+            editPhotoOption.addEventListener('click', () => {
+                closeOptionsModal();
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const oldPhotoUrl = modalPhoto.src;
+                    if (oldPhotoUrl) {
+                        const fileName = oldPhotoUrl.split('/').pop();
+                        await supabase.storage
+                            .from('student-photos')
+                            .remove([fileName]);
+                    }
+
+                    await uploadPhoto(currentStudentId, file);
+                };
+                input.click();
+            });
+
+            deletePhotoOption.addEventListener('click', async () => {
+                if (confirm('Yakin ingin menghapus foto ini?')) {
+                    await deletePhoto(currentStudentId, modalPhoto.src);
+                }
+                closeOptionsModal();
+            });
+
+            cancelOption.addEventListener('click', closeOptionsModal);
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.trim();
+                loadStudents(searchTerm);
+            });
+
+            loadStudents();
+        });
+    </script>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

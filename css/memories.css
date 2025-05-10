@@ -1,0 +1,275 @@
+/* Gaya umum */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #008080;
+}
+
+.header-custom {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Carousel */
+.carousel-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 14px;
+    background-color: #f8fafc;
+}
+
+.carousel-slide {
+    display: none;
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    background-color: white;
+    transition: opacity 0.5s ease;
+}
+
+.carousel-slide.active {
+    display: block;
+    opacity: 1;
+}
+
+.carousel-slide.fade-out {
+    opacity: 0;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 18px;
+    z-index: 10;
+    transition: background-color 0.3s;
+}
+
+.carousel-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.prev-btn {
+    left: 10px;
+}
+
+.next-btn {
+    right: 10px;
+}
+
+.play-pause-btn {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 10;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Photo Grid */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.grid-item {
+    display: flex;
+    align-items: flex-start;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    min-height: 150px;
+}
+
+.grid-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.grid-item img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px 0 0 8px;
+}
+
+/* Action Buttons for Grid Items */
+.grid-item .action-buttons {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
+    align-items: center;
+}
+
+.grid-item .like-btn, .grid-item .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    color: #666;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.grid-item .like-btn:hover {
+    color: #f472b6; /* Pink untuk like */
+}
+
+.grid-item .share-btn:hover {
+    color: #008080; /* Teal untuk share */
+}
+
+.grid-item .like-btn.liked {
+    color: #f472b6;
+    font-weight: 600;
+}
+
+/* Comments Section */
+.comments-section {
+    flex: 1;
+    margin-left: 0.5rem;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 0.5rem; /* Tambah padding */
+    color: #333; /* Warna teks gelap untuk kontras */
+    background-color: #fff; /* Pastikan latar belakang putih */
+    font-size: 0.9rem; /* Ukuran teks lebih jelas */
+}
+
+.comments-section p {
+    margin: 0.25rem 0; /* Jarak antar komentar */
+    line-height: 1.4; /* Tinggi baris untuk keterbacaan */
+}
+
+.comments-section small {
+    color: #666; /* Warna lebih lembut untuk user_id */
+    font-style: italic;
+}
+
+.comments-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.comments-section::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 3px;
+}
+
+.comments-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* No Photos Message */
+.no-photos {
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    grid-column: 1 / -1;
+}
+
+.loading {
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+}
+
+/* Carousel Indicators */
+.carousel-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.indicator.active {
+    background-color: white;
+    transform: scale(1.2);
+}
+
+/* Comment Modal */
+.comment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+}
+
+.comment-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.comment-modal-content img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.comment-modal-content input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.comment-modal-content button {
+    padding: 8px 16px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.comment-modal-content .cancel-btn {
+    background-color: #e0e0e0;
+}
+
+.comment-modal-content .submit-btn {
+    background-color: #f472b6;
+    color: white;
+}
