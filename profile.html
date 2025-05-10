@@ -163,7 +163,7 @@
                 <a href="#" id="profileNavLink" class="hover:underline font-medium">Profile</a>
                 <a href="gallery.html" class="hover:underline">Gallery</a>
                 <a href="memories.html" class="hover:underline">Memories</a>
-                <a href="index.html" class="hover:underline font-medium" onclick="localStorage.removeItem('studentProfileId');">Logout</a>
+                <a href="index.html" class="hover:underline font-medium" onclick="logout()">Logout</a>
             </nav>
         </div>
     </header>
@@ -177,19 +177,12 @@
             </section>
             
             <section class="my-8">
-                <div id="no-id-message" style="display: none;">
-                    <p class="text-white text-center">
-                        Tidak ada ID profil yang diberikan.
-                        <a href="index.html" class="text-blue-300 underline">Kembali ke halaman utama</a>
-                    </p>
-                </div>
-
                 <h2 class="text-2xl font-semibold text-center mb-6 text-white">Profil Siswa</h2>    
                 
                 <div class="profile-container">
                     <div class="photo-section mb-6 md:mb-0">
                         <div class="flex justify-center items-center mb-4">
-                            <img id="photo-preview" src="img/default-profile.png" alt="User Photo" class="photo-container w-64 h-64 object-cover">
+                            <img id="photo-preview" src="https://via.placeholder.com/150" alt="User Photo" class="photo-container w-64 h-64 object-cover">
                         </div>
                         <div class="flex flex-col items-center">
                             <input type="file" id="photo-upload" accept="image/jpeg,image/png" class="hidden">
@@ -205,228 +198,24 @@
                         </div>
                         <div class="profile-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                            <p id="name" class="w-full p-2">Memuat data...</p>
+                            <p id="name" class="w-full p-2">-</p>
                         </div>
                         
                         <div class="profile-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tempat/Tanggal Lahir</label>
-                            <p id="birth-place-date" class="w-full p-2">Memuat data...</p>
+                            <p id="birth-place-date" class="w-full p-2">-</p>
                         </div>
                         
                         <div class="profile-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">NIS</label>
-                            <p id="nis" class="w-full p-2">Memuat data...</p>
+                            <p id="nis" class="w-full p-2">-</p>
                         </div>
                         
                         <div class="profile-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">NISN</label>
-                            <p id="nisn" class="w-full p-2">Memuat data...</p>
+                            <p id="nisn" class="w-full p-2">-</p>
                         </div>
                         
                         <div class="profile-field">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
-                            <p id="class" class="w-full p-2">Memuat data...</p>
-                        </div>
-                        
-                        <div class="profile-field">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                            <p id="address" class="w-full p-2">Memuat data...</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <div id="uploadModal" class="modal">
-                <div class="modal-card bg-white p-8 rounded-xl">
-                    <h2 class="text-xl font-semibold mb-4">Sukses!</h2>
-                    <p class="mb-4">Foto profil berhasil diperbarui.</p>
-                    <div class="flex justify-end">
-                        <button id="closeModal" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-    <div id="toast" class="toast"></div>
-
-    <script>
-        // Fungsi logout
-        function logout() {
-            localStorage.removeItem('studentProfileId');
-            window.location.href = 'index.html';
-        }
-
-        // Event: klik tombol "Change Photo" untuk membuka file picker
-        document.getElementById('upload-btn').addEventListener('click', () => {
-            document.getElementById('photo-upload').click();
-        });
-
-        // Event: preview dan upload otomatis setelah pilih file
-        document.getElementById('photo-upload').addEventListener('change', async function (event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                alert('File harus berupa gambar!');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('photo-preview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-            await uploadPhoto();
-        });
-
-        // Fungsi upload foto ke Supabase student-photos bucket
-        async function uploadPhoto() {
-            const fileInput = document.getElementById('photo-upload');
-            const file = fileInput.files[0];
-            const toast = document.getElementById('toast');
-            const showToast = (message) => {
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            };
-
-            if (!file) {
-                showToast('Pilih foto dulu!');
-                return;
-            }
-            if (!file.type.startsWith('image/')) {
-                showToast('File yang dipilih bukan gambar!');
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('Ukuran file terlalu besar. Maksimum 5MB.');
-                return;
-            }
-
-            const loadingElement = document.getElementById('loading');
-            const uploadModal = document.getElementById('uploadModal');
-            const profileId = localStorage.getItem('studentProfileId');
-            if (!profileId) {
-                showToast('ID siswa tidak ditemukan!');
-                setTimeout(() => window.location.href = 'index.html', 3000);
-                return;
-            }
-
-            try {
-                loadingElement.style.display = 'block';
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${profileId}_${Date.now()}.${fileExt}`;
-                const filePath = `profile-photos/${fileName}`;
-
-                const supabase = window.supabase.createClient(
-                    'https://dswzjhefngrgzowcilll.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0'
-                );
-
-                const { error: uploadError } = await supabase.storage
-                    .from('student-photos')
-                    .upload(filePath, file, { upsert: true });
-
-                if (uploadError) throw uploadError;
-
-                const { data: urlData } = supabase.storage
-                    .from('student-photos')
-                    .getPublicUrl(filePath);
-                const publicUrl = urlData.publicUrl;
-
-                if (!publicUrl) throw new Error('Gagal mendapatkan URL publik.');
-
-                const { error: updateError } = await supabase
-                    .from('students')
-                    .update({ photo_url: publicUrl })
-                    .eq('id', profileId);
-
-                if (updateError) throw updateError;
-
-                document.getElementById('photo-preview').src = publicUrl;
-                uploadModal.classList.add('show');
-                showToast('Foto profil berhasil diperbarui!');
-            } catch (error) {
-                console.error('Error uploading photo:', error);
-                showToast(`Gagal mengunggah foto: ${error.message}`);
-            } finally {
-                loadingElement.style.display = 'none';
-                fileInput.value = '';
-            }
-        }
-
-        // Inisialisasi dan load profil
-        document.addEventListener('DOMContentLoaded', async () => {
-            const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
-            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-            const toast = document.getElementById('toast');
-            const showToast = (message) => {
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            };
-
-            const loadingElement = document.getElementById('loading');
-            const profileContent = document.getElementById('profile-content');
-            const profileNavLink = document.getElementById('profileNavLink');
-            const profileMessage = document.getElementById('profile-message-content');
-            const uploadModal = document.getElementById('uploadModal');
-            const closeModalButton = document.getElementById('closeModal');
-
-            const urlParams = new URLSearchParams(window.location.search);
-            let profileId = urlParams.get('id');
-            
-            if (!profileId) {
-                profileId = localStorage.getItem('studentProfileId');
-                if (profileId) {
-                    window.history.replaceState({}, '', `profile.html?id=${profileId}`);
-                }
-            }
-
-            if (!profileId) {
-                profileMessage.textContent = 'ID siswa tidak ditemukan. Kembali ke beranda...';
-                loadingElement.style.display = 'none';
-                profileContent.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 3000);
-                return;
-            }
-
-            localStorage.setItem('studentProfileId', profileId);
-            profileNavLink.href = `profile.html?id=${profileId}`;
-
-            try {
-                const { data, error } = await supabase
-                    .from('students')
-                    .select('*')
-                    .eq('id', profileId)
-                    .single();
-                
-                if (error) throw error;
-                
-                if (data) {
-                    document.getElementById('photo-preview').src = data.photo_url || 'https://via.placeholder.com/150';
-                    profileMessage.textContent = `Profil ID: ${profileId}`;
-                    loadingElement.style.display = 'none';
-                    profileContent.style.display = 'block';
-                } else {
-                    throw new Error('Profil tidak ditemukan');
-                }
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                profileMessage.textContent = `Error: Tidak dapat memuat profil. Pastikan ID benar atau coba lagi nanti.`;
-                loadingElement.style.display = 'none';
-                profileContent.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 3000);
-            }
-
-            closeModalButton.addEventListener('click', () => {
-                uploadModal.classList.remove('show');
-            });
-        });
-    </script>
-</body>
-</html>
+                            <p id="class" class="w-full p
