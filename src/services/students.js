@@ -6,11 +6,12 @@ export const getStudent = async (id) => {
   const { data, error } = await supabase
     .from('students')
     .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data
+    .eq('id', id);
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error('Student not found');
+  }
+  return data[0];
 }
 
 export const updateStudentPhoto = async (studentId, file) => {
