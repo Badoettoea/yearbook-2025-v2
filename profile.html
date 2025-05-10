@@ -6,11 +6,9 @@
     <title>Yearbook 2025 - Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/yearbook-2025-v2/src/style.css"> <!-- Import CSS -->
+    <link rel="stylesheet" href="/yearbook-2025-v2/src/style.css">
     <style>
-        /* Inline style dari profile.html sebelumnya tetap */
         body { font-family: 'Poppins', sans-serif; background-color: #008080; }
-        /* ... (salin semua style inline dari profile.html sebelumnya) ... */
     </style>
 </head>
 <body class="text-gray-800">
@@ -137,7 +135,6 @@
             }
 
             try {
-                const oldPhotoUrl = document.getElementById('photo-preview').src;
                 await updateStudentPhoto(studentId, file);
                 location.reload();
             } catch (error) {
