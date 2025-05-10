@@ -1,275 +1,202 @@
-/* Gaya umum */
+/* ===== VARIABLES & RESET ===== */
+:root {
+  --teal: #008080;
+  --teal-light: #00a3a3;
+  --pink: #f472b6;
+  --white: #ffffff;
+  --gray-light: #f8fafc;
+  --gray-dark: #333333;
+  --shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== BASE STYLES (MOBILE FIRST) ===== */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #008080;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  color: var(--gray-dark);
+  line-height: 1.6;
+  padding: 0;
 }
 
+/* ===== HEADER ===== */
 .header-custom {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-/* Carousel */
+/* ===== CAROUSEL (MOBILE OPTIMIZED) ===== */
 .carousel-container {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-    overflow: hidden;
-    border-radius: 14px;
-    background-color: #f8fafc;
+  position: relative;
+  width: 95%;
+  margin: 1rem auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--gray-light);
 }
 
 .carousel-slide {
-    display: none;
-    width: 100%;
-    height: 400px;
-    object-fit: contain;
-    background-color: white;
-    transition: opacity 0.5s ease;
+  position: absolute;
+  width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 .carousel-slide.active {
-    display: block;
-    opacity: 1;
-}
-
-.carousel-slide.fade-out {
-    opacity: 0;
+  opacity: 1;
+  position: relative;
 }
 
 .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-    border-radius: 50%;
-    font-size: 18px;
-    z-index: 10;
-    transition: background-color 0.3s;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--white);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
 }
 
-.carousel-btn:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.prev-btn {
-    left: 10px;
-}
-
-.next-btn {
-    right: 10px;
-}
+.prev-btn { left: 10px; }
+.next-btn { right: 10px; }
 
 .play-pause-btn {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    padding: 5px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    z-index: 10;
-    font-family: 'Poppins', sans-serif;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--white);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
-/* Photo Grid */
+/* ===== PHOTO GRID (MOBILE FRIENDLY) ===== */
 .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2rem;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 100%;
 }
 
 .grid-item {
-    display: flex;
-    align-items: flex-start;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    cursor: pointer;
-    min-height: 150px;
-}
-
-.grid-item:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .grid-item img {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 8px 0 0 8px;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
 }
 
-/* Action Buttons for Grid Items */
-.grid-item .action-buttons {
-    display: flex;
-    gap: 1rem;
-    padding: 0.5rem;
-    align-items: center;
+.grid-content {
+  padding: 1rem;
 }
 
-.grid-item .like-btn, .grid-item .share-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: pointer;
-    color: #666;
-    font-size: 0.9rem;
-    transition: color 0.3s;
-}
-
-.grid-item .like-btn:hover {
-    color: #f472b6; /* Pink untuk like */
-}
-
-.grid-item .share-btn:hover {
-    color: #008080; /* Teal untuk share */
-}
-
-.grid-item .like-btn.liked {
-    color: #f472b6;
-    font-weight: 600;
-}
-
-/* Comments Section */
+/* ===== COMMENTS SECTION ===== */
 .comments-section {
-    flex: 1;
-    margin-left: 0.5rem;
-    text-align: left;
-    max-height: 150px;
-    overflow-y: auto;
-    padding: 0.5rem; /* Tambah padding */
-    color: #333; /* Warna teks gelap untuk kontras */
-    background-color: #fff; /* Pastikan latar belakang putih */
-    font-size: 0.9rem; /* Ukuran teks lebih jelas */
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .comments-section p {
-    margin: 0.25rem 0; /* Jarak antar komentar */
-    line-height: 1.4; /* Tinggi baris untuk keterbacaan */
+  margin: 0.25rem 0;
 }
 
-.comments-section small {
-    color: #666; /* Warna lebih lembut untuk user_id */
-    font-style: italic;
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
 }
 
-.comments-section::-webkit-scrollbar {
-    width: 6px;
+.like-btn, .share-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
 }
 
-.comments-section::-webkit-scrollbar-thumb {
-    background-color: #888;
-    border-radius: 3px;
+.like-btn.liked {
+  color: var(--pink);
+  font-weight: 600;
 }
 
-.comments-section::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-/* No Photos Message */
-.no-photos {
-    color: white;
-    text-align: center;
-    padding: 2rem;
-    grid-column: 1 / -1;
-}
-
-.loading {
-    color: white;
-    text-align: center;
-    padding: 2rem;
-    font-size: 1.2rem;
-}
-
-/* Carousel Indicators */
-.carousel-indicators {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-}
-
-.indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.indicator.active {
-    background-color: white;
-    transform: scale(1.2);
-}
-
-/* Comment Modal */
+/* ===== MODAL (MOBILE FRIENDLY) ===== */
 .comment-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 20;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
 }
 
 .comment-modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    text-align: center;
+  background: var(--white);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
-.comment-modal-content img {
-    width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    border-radius: 8px;
-    margin-bottom: 15px;
+/* ===== UTILITY CLASSES ===== */
+.no-photos, .loading {
+  color: var(--white);
+  text-align: center;
+  padding: 2rem;
 }
 
-.comment-modal-content input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+/* ===== MEDIA QUERIES (TABLET/DESKTOP) ===== */
+@media (min-width: 768px) {
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .carousel-container {
+    max-width: 800px;
+  }
+  
+  .carousel-slide {
+    max-height: 60vh;
+  }
 }
 
-.comment-modal-content button {
-    padding: 8px 16px;
-    margin-right: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.comment-modal-content .cancel-btn {
-    background-color: #e0e0e0;
-}
-
-.comment-modal-content .submit-btn {
-    background-color: #f472b6;
-    color: white;
+@media (min-width: 1024px) {
+  .photo-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1200px;
+  }
 }
