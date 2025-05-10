@@ -292,6 +292,19 @@
                 </div>
             </div>
         </div>
+
+        <section class="my-8">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-white">Unggah Foto Kenangan</h2>
+            <div class="flex justify-center">
+                <input type="file" id="photoUpload" accept="image/*" class="hidden" />
+                <label for="photoUpload" class="cursor-pointer bg-pink-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-pink-600 transition">
+                    Pilih Foto
+                </label>
+                <button id="uploadPhotoBtn" class="bg-green-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-green-600 transition ml-4">
+                    Unggah Foto
+                </button>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -666,10 +679,40 @@
                 }
             }
 
+            // Fungsi untuk mengunggah foto
+            async function uploadPhoto() {
+                const fileInput = document.getElementById('photoUpload');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Pilih foto dulu!');
+                    return;
+                }
+
+                const fileName = `${Date.now()}_${file.name}`; // Tambahkan timestamp untuk nama unik
+                try {
+                    const { error } = await supabase.storage
+                        .from('gallery')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (error) throw error;
+
+                    alert('Foto berhasil diunggah!');
+                    fileInput.value = ''; // Reset input file
+                    await displayPhotos(); // Refresh foto setelah upload
+                } catch (error) {
+                    console.error('Error mengunggah foto:', error.message);
+                    alert(`Gagal mengunggah foto: ${error.message}`);
+                }
+            }
+
             // Event listener utama
             document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
             document.getElementById('cancelComment').addEventListener('click', closeCommentModal);
             document.getElementById('submitComment').addEventListener('click', submitComment);
+            document.getElementById('uploadPhotoBtn').addEventListener('click', uploadPhoto);
 
             // Jalankan fungsi utama
             await displayPhotos();

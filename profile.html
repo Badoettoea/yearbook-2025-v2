@@ -246,6 +246,14 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
+=======
+
+        <div>
+            <label for="studentIdInput" class="block text-sm font-medium text-gray-700 mb-1">Masukkan ID Siswa:</label>
+            <input type="text" id="studentIdInput" placeholder="Masukkan ID Siswa" class="w-full p-2 mb-4 border rounded-md">
+        </div>
+>>>>>>> 0b7651c (wowwww)
     </main>
 
     <div id="toast" class="toast"></div>
@@ -271,7 +279,7 @@
 
         // Fungsi upload foto
         async function uploadPhoto() {
-            const fileInput = document.querySelector('input[type=file]');
+            const fileInput = document.getElementById('photo-upload');
             const file = fileInput.files[0];
             const toast = document.getElementById('toast');
             const showToast = (message) => {
@@ -296,7 +304,7 @@
 
             const loadingElement = document.getElementById('loading');
             const uploadModal = document.getElementById('uploadModal');
-            const profileId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('studentProfileId');
+            const profileId = localStorage.getItem('studentProfileId');
 
             if (!profileId) {
                 showToast('ID siswa tidak ditemukan!');
@@ -308,11 +316,11 @@
                 loadingElement.style.display = 'block';
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${profileId}_${Date.now()}.${fileExt}`;
-                const filePath = `${fileName}`;
+                const filePath = `profile-photos/${fileName}`;
 
                 const supabase = window.supabase.createClient(
                     'https://dswzjhefngrgzowcilll.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyangasdasdsdsaMiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0'
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0'
                 );
 
                 const { error: uploadError } = await supabase.storage
@@ -335,7 +343,7 @@
 
                 if (updateError) throw updateError;
 
-                document.getElementById('user-photo').src = publicUrl;
+                document.getElementById('photo-preview').src = publicUrl;
                 uploadModal.classList.add('show');
                 showToast('Foto profil berhasil diperbarui, bro!');
             } catch (error) {
