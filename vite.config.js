@@ -1,28 +1,28 @@
-// File: vite.config.js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react' // ✅ Tambahkan ini
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
-  plugins: [react()], // ✅ Tambahkan ini agar Vite tahu kamu pakai JSX
+  // Hapus plugin React kalau nggak pakai JSX
+  plugins: [],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
   },
+  base: '/yearbook-2025-v2/', // Tambah ini untuk GitHub Pages
   server: {
-    port: 3000
+    port: 3000,
   },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: 'index.html',
-        profile: 'profile.html',
-        gallery: 'gallery.html',
-        memories: 'memories.html'
-      }
-    }
-  }
-})
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        profile: fileURLToPath(new URL('./profile.html', import.meta.url)),
+        gallery: fileURLToPath(new URL('./gallery.html', import.meta.url)),
+        memories: fileURLToPath(new URL('./memories.html', import.meta.url)),
+      },
+    },
+  },
+});
