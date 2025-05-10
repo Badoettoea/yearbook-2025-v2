@@ -162,6 +162,7 @@
         const savedProfileId = localStorage.getItem('studentProfileId');
         if (savedProfileId) {
             profileLink.href = `profile.html?id=${savedProfileId}`;
+            profileCardLink.href = `profile.html?id=${savedProfileId}`;
         }
 
         openModalButton.addEventListener('click', () => {
@@ -177,7 +178,6 @@
         viewProfileButton.addEventListener('click', () => {
             const profileId = profileIdInput.value.trim();
             if (profileId) {
-                // Save to localStorage
                 localStorage.setItem('studentProfileId', profileId);
                 window.location.href = `profile.html?id=${profileId}`;
                 modal.style.display = 'none';
@@ -186,7 +186,6 @@
             }
         });
 
-        // Handle profile link in header
         profileLink.addEventListener('click', (e) => {
             e.preventDefault();
             const savedId = localStorage.getItem('studentProfileId');
@@ -198,7 +197,6 @@
             }
         });
 
-        // Handle profile card click
         profileCardLink.addEventListener('click', (e) => {
             e.preventDefault();
             const savedId = localStorage.getItem('studentProfileId');
@@ -209,15 +207,11 @@
                 modal.classList.add('show');
             }
         });
-    </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-    <script>
-      const supabaseUrl = 'https://dswzjhefngrgzowcilll.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzd3pqaGVmbmdyZ3pvd2NpbGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4MTc3OTAsImV4cCI6MjA2MjM5Mzc5MH0.V6ZXOvPRKXtGZz13VG4tOH3RC8eGplsqUwWn_fkeeG0';
-      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-      // ...kode Anda...
+        function logout() {
+            localStorage.removeItem('studentProfileId');
+            window.location.href = 'index.html';
+        }
     </script>
-    
 </body>
 </html>
